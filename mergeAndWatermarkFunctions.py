@@ -1,54 +1,46 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from PyPDF2 import PdfReader, PdfWriter
-import os
+import io
+import requests
 
 app = Flask(__name__)
 
+# Function to download files from SharePoint URL
+def download_file_from_sharepoint(file_url, headers):
+    response = requests.get(file_url, headers=headers)
+    if response.status_code == 200:
+        return io.BytesIO(response.content)
+    else:
+        raise Exception(f"Failed to download file from SharePoint: {response.status_code}")
+
 @app.route('/merge', methods=['POST'])
 def merge_pdfs():
-    files = request.files.getlist('files')
-    output_path = request.form.get('output_path')
+    # Get list of SharePoint file URLs
+    file_urls = request.json.get('file_urls')
+    sharepoint_token = request.json.get('sharepoint_token')  # Bearer token for authentication
+    
+    if not file_urls or not sharepoint_token:
+        return jsonify({"error": "Missing file URLs or SharePoint token"}), 400
 
-    if not files or not output_path:
-        return jsonify({"error": "Missing files or output path"}), 400
-
-    writer = PdfWriter()
     try:
-        for file in files:
-            reader = PdfReader(file)
+        writer = PdfWriter()
+        headers = {"Authorization": f"Bearer {sharepoint_token}"}
+
+        # Download each file from SharePoint and merge them
+        for file_url in file_urls:
+            file_content = download_file_from_sharepoint(file_url, headers)
+            reader = PdfReader(file_content)
             for page in reader.pages:
                 writer.add_page(page)
 
-        with open(output_path, 'wb') as output_file:
-            writer.write(output_file)
+        # Create a BytesIO object to store the merged PDF in memory
+        merged_pdf = io.BytesIO()
+        writer.write(merged_pdf)
+        merged_pdf.seek(0)  # Move the pointer to the start of the in-memory file
 
-        return jsonify({"message": "PDFs merged successfully", "output": output_path})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        # Return the merged PDF as content to Power Automate
+        return send_file(merged_pdf, mimetype='application/pdf', as_attachment=True, download_name="merged_output.pdf")
 
-@app.route('/watermark', methods=['POST'])
-def add_watermark():
-    pdf_file = request.files.get('pdf_file')
-    watermark_file = request.files.get('watermark_file')
-    output_path = request.form.get('output_path')
-
-    if not pdf_file or not watermark_file or not output_path:
-        return jsonify({"error": "Missing PDF file, watermark file, or output path"}), 400
-
-    try:
-        reader = PdfReader(pdf_file)
-        watermark_reader = PdfReader(watermark_file)
-        watermark_page = watermark_reader.pages[0]
-
-        writer = PdfWriter()
-        for page in reader.pages:
-            page.merge_page(watermark_page)
-            writer.add_page(page)
-
-        with open(output_path, 'wb') as output_file:
-            writer.write(output_file)
-
-        return jsonify({"message": "Watermark added successfully", "output": output_path})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
