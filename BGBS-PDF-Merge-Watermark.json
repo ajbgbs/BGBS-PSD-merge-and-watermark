@@ -1,73 +1,112 @@
-{
-  "swagger": "2.0",
-  "info": {
-    "title": "BGBS PDF Merge and Watermark",
-    "description": "API to merge and watermark PDFs.",
-    "version": "1.0.0"
-  },
-  "host": "bgbs-pdf-merge-and-watermark-fhggcvbab9ccezat.uksouth-01.azurewebsites.net",
-  "schemes": ["https"],
-  "paths": {
-    "/merge": {
-      "post": {
-        "summary": "Merge PDFs",
-        "consumes": ["multipart/form-data"],
-        "parameters": [
-          {
-            "name": "files",
-            "in": "formData",
-            "type": "file",
-            "required": true,
-            "description": "PDF files to merge"
-          },
-          {
-            "name": "output_path",
-            "in": "formData",
-            "type": "string",
-            "required": true,
-            "description": "Output file path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "PDFs merged successfully"
-          }
-        }
-      }
-    },
-    "/watermark": {
-      "post": {
-        "summary": "Add Watermark",
-        "consumes": ["multipart/form-data"],
-        "parameters": [
-          {
-            "name": "pdf_file",
-            "in": "formData",
-            "type": "file",
-            "required": true,
-            "description": "PDF file to watermark"
-          },
-          {
-            "name": "watermark_file",
-            "in": "formData",
-            "type": "file",
-            "required": true,
-            "description": "Watermark PDF file"
-          },
-          {
-            "name": "output_path",
-            "in": "formData",
-            "type": "string",
-            "required": true,
-            "description": "Output file path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Watermark added successfully"
-          }
-        }
-      }
-    }
-  }
-}
+openapi: 3.0.0
+info:
+  title: PDF Merger API
+  description: API to merge PDFs and apply watermarks.
+  version: 1.0.0
+paths:
+  /merge:
+    post:
+      summary: Merges multiple PDFs from SharePoint URLs into one PDF.
+      operationId: mergePdfs
+      requestBody:
+        description: List of SharePoint file URLs and Bearer token for authentication.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file_urls:
+                  type: array
+                  items:
+                    type: string
+                    format: uri
+                  description: List of SharePoint file URLs to merge.
+                sharepoint_token:
+                  type: string
+                  description: Bearer token for SharePoint authentication.
+              required:
+                - file_urls
+                - sharepoint_token
+      responses:
+        '200':
+          description: Successfully merged PDFs and returned as content.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+              example: "Merged PDF content"
+        '400':
+          description: Missing files or SharePoint token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Server error during PDF merge.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /watermark:
+    post:
+      summary: Adds a watermark to a PDF.
+      operationId: addWatermark
+      requestBody:
+        description: PDF file and watermark file with output path.
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                pdf_file:
+                  type: string
+                  format: binary
+                  description: The PDF file to watermark.
+                watermark_file:
+                  type: string
+                  format: binary
+                  description: The watermark PDF file.
+                output_path:
+                  type: string
+                  description: The file path where the watermarked PDF will be saved.
+              required:
+                - pdf_file
+                - watermark_file
+                - output_path
+      responses:
+        '200':
+          description: Watermark added successfully and returned as content.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+              example: "Watermarked PDF content"
+        '400':
+          description: Missing PDF file, watermark file, or output path.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Server error during watermark application.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
