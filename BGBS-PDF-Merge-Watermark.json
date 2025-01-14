@@ -11,7 +11,7 @@
                 "summary": "Merges multiple PDFs from SharePoint URLs into one PDF.",
                 "operationId": "mergePdfs",
                 "requestBody": {
-                    "description": "List of SharePoint file URLs and Bearer token for authentication.",
+                    "description": "List of SharePoint file URLs to merge.",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -25,15 +25,10 @@
                                             "format": "uri"
                                         },
                                         "description": "List of SharePoint file URLs to merge."
-                                    },
-                                    "sharepoint_token": {
-                                        "type": "string",
-                                        "description": "Bearer token for SharePoint authentication."
                                     }
                                 },
                                 "required": [
-                                    "file_urls",
-                                    "sharepoint_token"
+                                    "file_urls"
                                 ]
                             }
                         }
@@ -53,7 +48,7 @@
                         }
                     },
                     "400": {
-                        "description": "Missing files or SharePoint token.",
+                        "description": "Missing file URLs.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -90,7 +85,7 @@
                 "summary": "Adds a watermark to a PDF.",
                 "operationId": "addWatermark",
                 "requestBody": {
-                    "description": "PDF file and watermark file with output path.",
+                    "description": "PDF file and watermark file.",
                     "required": true,
                     "content": {
                         "multipart/form-data": {
@@ -106,16 +101,11 @@
                                         "type": "string",
                                         "format": "binary",
                                         "description": "The watermark PDF file."
-                                    },
-                                    "output_path": {
-                                        "type": "string",
-                                        "description": "The file path where the watermarked PDF will be saved."
                                     }
                                 },
                                 "required": [
                                     "pdf_file",
-                                    "watermark_file",
-                                    "output_path"
+                                    "watermark_file"
                                 ]
                             }
                         }
@@ -135,7 +125,7 @@
                         }
                     },
                     "400": {
-                        "description": "Missing PDF file, watermark file, or output path.",
+                        "description": "Missing PDF file or watermark file.",
                         "content": {
                             "application/json": {
                                 "schema": {
