@@ -1,0 +1,73 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "BGBS PDF Merge and Watermark",
+    "description": "API to merge and watermark PDFs.",
+    "version": "1.0.0"
+  },
+  "host": "bgbs-pdf-merge-and-watermark-fhggcvbab9ccezat.uksouth-01.azurewebsites.net",
+  "schemes": ["https"],
+  "paths": {
+    "/merge": {
+      "post": {
+        "summary": "Merge PDFs",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "files",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "PDF files to merge"
+          },
+          {
+            "name": "output_path",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "Output file path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDFs merged successfully"
+          }
+        }
+      }
+    },
+    "/watermark": {
+      "post": {
+        "summary": "Add Watermark",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "pdf_file",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "PDF file to watermark"
+          },
+          {
+            "name": "watermark_file",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "Watermark PDF file"
+          },
+          {
+            "name": "output_path",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "Output file path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Watermark added successfully"
+          }
+        }
+      }
+    }
+  }
+}
