@@ -6,8 +6,9 @@ import requests
 app = Flask(__name__)
 
 # Function to download files from SharePoint URL
-def download_file_from_sharepoint(file_url):
-    response = requests.get(file_url)
+def download_file_from_sharepoint(file_url, token=None):
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    response = requests.get(file_url, headers=headers)
     if response.status_code == 200:
         return io.BytesIO(response.content)
     else:
@@ -17,6 +18,7 @@ def download_file_from_sharepoint(file_url):
 def merge_pdfs():
     # Get list of SharePoint file URLs
     file_urls = request.json.get('file_urls')
+    token = request.json.get('token')  # Optional authentication token
     
     if not file_urls:
         return jsonify({"error": "Missing file URLs"}), 400
@@ -26,7 +28,7 @@ def merge_pdfs():
 
         # Download each file from SharePoint and merge them
         for file_url in file_urls:
-            file_content = download_file_from_sharepoint(file_url)
+             file_content = download_file_from_sharepoint(file_url, token=token)
             reader = PdfReader(file_content)
             for page in reader.pages:
                 writer.add_page(page)
