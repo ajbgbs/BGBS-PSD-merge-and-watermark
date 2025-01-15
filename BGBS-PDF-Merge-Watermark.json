@@ -27,13 +27,9 @@
                           "type": "string",
                           "format": "byte",
                           "description": "Base64-encoded PDF content."
-                        },
-                        "fileName": {
-                          "type": "string",
-                          "description": "Original file name of the PDF."
                         }
                       },
-                      "required": ["fileContent", "fileName"]
+                      "required": ["fileContent"]
                     }
                   }
                 },
