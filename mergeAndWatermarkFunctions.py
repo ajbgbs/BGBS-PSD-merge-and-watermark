@@ -1,35 +1,23 @@
 from flask import Flask, request, jsonify, send_file
 from PyPDF2 import PdfReader, PdfWriter
 import io
-import requests
 
 app = Flask(__name__)
 
-# Function to download files from SharePoint URL
-def download_file_from_sharepoint(file_url, token=None):
-    headers = {"Authorization": f"Bearer {token}"} if token else {}
-    response = requests.get(file_url, headers=headers)
-    if response.status_code == 200:
-        return io.BytesIO(response.content)
-    else:
-        raise Exception(f"Failed to download file from SharePoint: {response.status_code}")
-
 @app.route('/merge', methods=['POST'])
 def merge_pdfs():
-    # Get list of SharePoint file URLs
-    file_urls = request.json.get('file_urls')
-    token = request.json.get('token')  # Optional authentication token
-    
-    if not file_urls:
-        return jsonify({"error": "Missing file URLs"}), 400
+    # Retrieve files from the request
+    files = request.files.getlist('files')  # Expecting multiple files in form-data
+
+    if not files:
+        return jsonify({"error": "No files provided"}), 400
 
     try:
         writer = PdfWriter()
 
-        # Download each file from SharePoint and merge them
-        for file_url in file_urls:
-             file_content = download_file_from_sharepoint(file_url, token=token)
-            reader = PdfReader(file_content)
+        # Process each uploaded file
+        for file in files:
+            reader = PdfReader(file)
             for page in reader.pages:
                 writer.add_page(page)
 
