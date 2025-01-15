@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 @app.route('/merge', methods=['POST'])
 def merge_pdfs():
-    files = request.json.get('files')  # Expecting a list of file objects with fileContent and fileName
+    files = request.json.get('files')  # Expecting a list of file objects with fileContent
 
     if not files:
         return jsonify({"error": "Missing files"}), 400
