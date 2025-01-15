@@ -8,10 +8,10 @@
     "paths": {
         "/merge": {
             "post": {
-                "summary": "Merges multiple PDFs from SharePoint URLs into one PDF.",
+                "summary": "Merges multiple PDFs from provided URLs into one PDF.",
                 "operationId": "mergePdfs",
                 "requestBody": {
-                    "description": "List of SharePoint file URLs to merge.",
+                    "description": "List of file URLs to merge.",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -24,7 +24,7 @@
                                             "type": "string",
                                             "format": "uri"
                                         },
-                                        "description": "List of SharePoint file URLs to merge."
+                                        "description": "List of file URLs to merge."
                                     }
                                 },
                                 "required": [
