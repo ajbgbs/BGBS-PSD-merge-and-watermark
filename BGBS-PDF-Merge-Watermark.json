@@ -1,35 +1,43 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "PDF Merger API",
-    "description": "API to merge PDFs and apply watermarks.",
-    "version": "1.0.0"
+    "title": "PDF Processor API",
+    "description": "API to merge PDFs and apply watermarks with support for Power Automate integration.",
+    "version": "1.1.0"
   },
   "paths": {
     "/merge": {
       "post": {
-        "summary": "Merges multiple PDFs into one PDF.",
+        "summary": "Merge multiple PDFs",
         "operationId": "mergePdfs",
         "requestBody": {
-          "description": "Binary files to merge.",
+          "description": "List of PDFs to merge, provided as Base64-encoded content.",
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "files": {
                     "type": "array",
                     "items": {
-                      "type": "string",
-                      "format": "binary"
-                    },
-                    "description": "List of PDF files to merge."
+                      "type": "object",
+                      "properties": {
+                        "fileContent": {
+                          "type": "string",
+                          "format": "byte",
+                          "description": "Base64-encoded PDF content."
+                        },
+                        "fileName": {
+                          "type": "string",
+                          "description": "Original file name of the PDF."
+                        }
+                      },
+                      "required": ["fileContent", "fileName"]
+                    }
                   }
                 },
-                "required": [
-                  "files"
-                ]
+                "required": ["files"]
               }
             }
           }
@@ -42,13 +50,12 @@
                 "schema": {
                   "type": "string",
                   "format": "binary"
-                },
-                "example": "Merged PDF content"
+                }
               }
             }
           },
           "400": {
-            "description": "Missing files.",
+            "description": "Bad request - missing or invalid inputs.",
             "content": {
               "application/json": {
                 "schema": {
@@ -82,50 +89,46 @@
     },
     "/watermark": {
       "post": {
-        "summary": "Adds a watermark to a PDF.",
+        "summary": "Add a watermark to a PDF",
         "operationId": "addWatermark",
         "requestBody": {
-          "description": "PDF file and watermark file.",
+          "description": "Base64-encoded content of the PDF and watermark files.",
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "pdf_file": {
+                  "pdf_file_content": {
                     "type": "string",
-                    "format": "binary",
-                    "description": "The PDF file to watermark."
+                    "format": "byte",
+                    "description": "Base64-encoded content of the PDF file."
                   },
-                  "watermark_file": {
+                  "watermark_file_content": {
                     "type": "string",
-                    "format": "binary",
-                    "description": "The watermark PDF file."
+                    "format": "byte",
+                    "description": "Base64-encoded content of the watermark PDF file."
                   }
                 },
-                "required": [
-                  "pdf_file",
-                  "watermark_file"
-                ]
+                "required": ["pdf_file_content", "watermark_file_content"]
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Watermark added successfully and returned as content.",
+            "description": "Successfully added watermark and returned as content.",
             "content": {
               "application/pdf": {
                 "schema": {
                   "type": "string",
                   "format": "binary"
-                },
-                "example": "Watermarked PDF content"
+                }
               }
             }
           },
           "400": {
-            "description": "Missing PDF file or watermark file.",
+            "description": "Bad request - missing or invalid inputs.",
             "content": {
               "application/json": {
                 "schema": {
