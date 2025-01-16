@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "PDF Processor API",
-    "description": "API to merge PDFs and apply watermarks with support for Power Automate integration.",
-    "version": "1.2.0"
+    "title": "PDF Processing API",
+    "description": "API to merge and watermark PDFs.",
+    "version": "1.0.0"
   },
   "paths": {
     "/merge": {
@@ -11,7 +11,7 @@
         "summary": "Merge multiple PDFs",
         "operationId": "mergePdfs",
         "requestBody": {
-          "description": "List of PDFs to merge, provided as Base64-encoded content.",
+          "description": "List of Base64-encoded PDF files to merge.",
           "required": true,
           "content": {
             "application/json": {
@@ -22,9 +22,9 @@
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "format": "byte",
-                      "description": "Base64-encoded PDF content."
-                    }
+                      "format": "byte"
+                    },
+                    "description": "List of Base64-encoded PDF files."
                   }
                 },
                 "required": ["files"]
@@ -34,41 +34,43 @@
         },
         "responses": {
           "200": {
-            "description": "Successfully merged PDFs and returned as content.",
-            "content": {
-              "application/pdf": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request - missing or invalid inputs.",
+            "description": "Merged PDF returned as Base64-encoded content.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": {
-                      "type": "string"
+                    "file": {
+                      "type": "string",
+                      "format": "byte",
+                      "description": "Base64-encoded merged PDF."
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Server error during PDF merge.",
+          "400": {
+            "description": "Missing or invalid files.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": {
-                      "type": "string"
-                    }
+                    "error": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" }
                   }
                 }
               }
@@ -82,66 +84,68 @@
         "summary": "Add a watermark to a PDF",
         "operationId": "addWatermark",
         "requestBody": {
-          "description": "Base64-encoded content of the PDF and watermark files.",
+          "description": "PDF and watermark file as Base64-encoded content.",
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "pdf_file_content": {
+                  "pdf_file": {
                     "type": "string",
                     "format": "byte",
-                    "description": "Base64-encoded content of the PDF file."
+                    "description": "Base64-encoded PDF file."
                   },
-                  "watermark_file_content": {
+                  "watermark_file": {
                     "type": "string",
                     "format": "byte",
-                    "description": "Base64-encoded content of the watermark PDF file."
+                    "description": "Base64-encoded watermark PDF."
                   }
                 },
-                "required": ["pdf_file_content", "watermark_file_content"]
+                "required": ["pdf_file", "watermark_file"]
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successfully added watermark and returned as content.",
-            "content": {
-              "application/pdf": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request - missing or invalid inputs.",
+            "description": "Watermarked PDF returned as Base64-encoded content.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": {
-                      "type": "string"
+                    "file": {
+                      "type": "string",
+                      "format": "byte",
+                      "description": "Base64-encoded watermarked PDF."
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Server error during watermark application.",
+          "400": {
+            "description": "Missing or invalid files.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": {
-                      "type": "string"
-                    }
+                    "error": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" }
                   }
                 }
               }
