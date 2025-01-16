@@ -7,60 +7,56 @@ app = Flask(__name__)
 
 @app.route('/merge', methods=['POST'])
 def merge_pdfs():
-    files = request.json.get('files')  # Expecting a list of file objects with fileContent
-
-    if not files:
-        return jsonify({"error": "Missing files"}), 400
-
     try:
+        # Get the list of Base64-encoded files from the request
+        files = request.json.get('files')
+        if not files or not isinstance(files, list):
+            return jsonify({"error": "Missing or invalid 'files' parameter. Must be a list of Base64-encoded PDF content."}), 400
+
         writer = PdfWriter()
 
-        # Decode each file and add its pages to the PDF writer
-        for file in files:
-            file_content = base64.b64decode(file['fileContent'])
-            file_stream = io.BytesIO(file_content)
-            reader = PdfReader(file_stream)
-            for page in reader.pages:
-                writer.add_page(page)
+        # Decode each Base64 string and merge the PDFs
+        for file_content in files:
+            try:
+                pdf_data = io.BytesIO(base64.b64decode(file_content))
+                reader = PdfReader(pdf_data)
+                for page in reader.pages:
+                    writer.add_page(page)
+            except Exception as e:
+                return jsonify({"error": f"Error processing one of the PDFs: {str(e)}"}), 400
 
         # Create a BytesIO object to store the merged PDF in memory
         merged_pdf = io.BytesIO()
         writer.write(merged_pdf)
         merged_pdf.seek(0)
 
-        # Return the merged PDF as binary content
+        # Return the merged PDF as a response
         return send_file(merged_pdf, mimetype='application/pdf', as_attachment=True, download_name="merged_output.pdf")
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 @app.route('/watermark', methods=['POST'])
 def add_watermark():
-    # Get Base64-encoded PDF and watermark file content from the request
-    pdf_file_content = request.json.get('pdf_file_content')  # Base64-encoded PDF file
-    watermark_file_content = request.json.get('watermark_file_content')  # Base64-encoded watermark file
-
-    if not pdf_file_content or not watermark_file_content:
-        return jsonify({"error": "Missing PDF file or watermark file"}), 400
-
     try:
-        # Decode the Base64-encoded files
-        pdf_file_binary = base64.b64decode(pdf_file_content)
-        watermark_file_binary = base64.b64decode(watermark_file_content)
+        # Get the Base64-encoded files from the request
+        pdf_file_content = request.json.get('pdf_file_content')
+        watermark_file_content = request.json.get('watermark_file_content')
 
-        # Create file streams from the binary content
-        pdf_stream = io.BytesIO(pdf_file_binary)
-        watermark_stream = io.BytesIO(watermark_file_binary)
+        if not pdf_file_content or not watermark_file_content:
+            return jsonify({"error": "Missing 'pdf_file_content' or 'watermark_file_content' parameter."}), 400
 
-        # Read the PDF and the watermark
-        pdf_reader = PdfReader(pdf_stream)
-        watermark_reader = PdfReader(watermark_stream)
+        # Decode the Base64 strings
+        pdf_data = io.BytesIO(base64.b64decode(pdf_file_content))
+        watermark_data = io.BytesIO(base64.b64decode(watermark_file_content))
+
+        # Read the PDF and watermark
+        reader = PdfReader(pdf_data)
+        watermark_reader = PdfReader(watermark_data)
         watermark_page = watermark_reader.pages[0]
 
-        # Apply watermark to each page
         writer = PdfWriter()
-        for page in pdf_reader.pages:
+        for page in reader.pages:
             page.merge_page(watermark_page)
             writer.add_page(page)
 
@@ -69,9 +65,8 @@ def add_watermark():
         writer.write(watermarked_pdf)
         watermarked_pdf.seek(0)
 
-        # Return the watermarked PDF as binary content
+        # Return the watermarked PDF as a response
         return send_file(watermarked_pdf, mimetype='application/pdf', as_attachment=True, download_name="watermarked_output.pdf")
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
