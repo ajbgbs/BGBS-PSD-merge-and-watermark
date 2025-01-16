@@ -3,7 +3,7 @@
   "info": {
     "title": "PDF Processor API",
     "description": "API to merge PDFs and apply watermarks with support for Power Automate integration.",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
   "paths": {
     "/merge": {
@@ -21,15 +21,9 @@
                   "files": {
                     "type": "array",
                     "items": {
-                      "type": "object",
-                      "properties": {
-                        "fileContent": {
-                          "type": "string",
-                          "format": "byte",
-                          "description": "Base64-encoded PDF content."
-                        }
-                      },
-                      "required": ["fileContent"]
+                      "type": "string",
+                      "format": "byte",
+                      "description": "Base64-encoded PDF content."
                     }
                   }
                 },
