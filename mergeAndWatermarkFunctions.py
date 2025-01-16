@@ -1,9 +1,11 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from PyPDF2 import PdfReader, PdfWriter
-import io
 import base64
+import io
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 @app.route('/merge', methods=['POST'])
 def merge_pdfs():
